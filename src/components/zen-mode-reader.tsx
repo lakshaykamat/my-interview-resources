@@ -90,22 +90,27 @@ export function ZenModeReader({
               </p>
             </div>
             <div>{questionPanels[visibleIndex]}</div>
-            <div className="mt-10 grid grid-cols-2 gap-2 sm:flex sm:justify-between">
+            <div className="mt-10 flex items-center justify-between">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
+                size="icon"
                 onClick={showPreviousQuestion}
                 disabled={visibleIndex === 0}
+                aria-label="Previous question"
+                title="Previous question"
               >
                 <ChevronLeft aria-hidden="true" />
-                Previous
               </Button>
               <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={showNextQuestion}
                 disabled={visibleIndex === lastQuestionIndex}
+                aria-label="Next question"
+                title="Next question"
               >
-                Next
                 <ChevronRight aria-hidden="true" />
               </Button>
             </div>
