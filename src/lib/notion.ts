@@ -211,10 +211,16 @@ async function normalizeBlock(
   }
 
   if (block.type === "child_page") {
+    const childPage = await notion.pages.retrieve({ page_id: block.id });
+    const icon = "icon" in childPage ? normalizePageIcon(childPage.icon) : null;
+    const cover = "cover" in childPage ? normalizePageCover(childPage.cover) : null;
+
     return {
       id: block.id,
       type: "child_page",
       title: block.child_page.title,
+      icon,
+      cover,
       children:
         options.includeChildPageContent === false
           ? []
@@ -230,6 +236,10 @@ async function normalizeBlock(
       hasRowHeader: block.table.has_row_header,
       rows: await fetchTableRows(notion, block.id),
     };
+  }
+
+  if (block.type === "table_of_contents") {
+    return { id: block.id, type: "table_of_contents" };
   }
 
   if (supportedTextBlockTypes.has(block.type as NotionTextBlockType)) {
@@ -317,6 +327,25 @@ function getBlockRichText(block: BlockObjectResponse): RichTextItemResponse[] {
     default:
       return [];
   }
+}
+
+function normalizePageIcon(
+  icon: PageObjectResponse["icon"],
+): import("@/types/notion").NotionPageIcon | null {
+  if (!icon) return null;
+  if (icon.type === "emoji") return { type: "emoji", emoji: icon.emoji };
+  if (icon.type === "external") return { type: "url", url: icon.external.url };
+  if (icon.type === "file") return { type: "url", url: icon.file.url };
+  return null;
+}
+
+function normalizePageCover(
+  cover: PageObjectResponse["cover"],
+): string | null {
+  if (!cover) return null;
+  if (cover.type === "external") return cover.external.url;
+  if (cover.type === "file") return cover.file.url;
+  return null;
 }
 
 function getPageTitle(

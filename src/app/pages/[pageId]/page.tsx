@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { NotionContent } from "@/components/notion-content";
 import { ErrorState, SetupState } from "@/components/notion-page-state";
 import {
@@ -43,16 +42,7 @@ export default async function NotionChildPage({ params }: PageProps) {
       <div className="grid w-full gap-8 lg:grid-cols-[minmax(17rem,1fr)_minmax(0,48rem)_minmax(17rem,1fr)] lg:items-start">
         <TableOfContents items={tableOfContents} totalItems={headings.length} />
         <article className="min-w-0 pb-20 lg:col-start-2">
-          <Link
-            href="/"
-            className="mb-8 inline-flex rounded-md px-0 text-sm font-medium text-zinc-500 transition-colors hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
-          >
-            Back to all pages
-          </Link>
           <header className="mb-12 border-b border-zinc-200 pb-8 dark:border-zinc-800">
-            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
-              Interview Notes
-            </p>
             <h1 className="text-balance text-4xl font-semibold leading-tight tracking-tight text-zinc-950 sm:text-5xl dark:text-zinc-50">
               {state.page.title}
             </h1>

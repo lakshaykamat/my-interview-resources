@@ -1,16 +1,26 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, Focus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SETTINGS_KEYS } from "@/lib/settings";
 
 type ZenModeReaderProps = {
   children: ReactNode;
   questionPanels: ReactNode[];
   totalQuestions: number;
 };
+
+function shuffleArray<T>(arr: T[]): T[] {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
 
 export function ZenModeReader({
   children,
@@ -19,13 +29,12 @@ export function ZenModeReader({
 }: ZenModeReaderProps) {
   const [isZenMode, setIsZenMode] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [navbarSlot] = useState<HTMLElement | null>(() => {
-    if (typeof document === "undefined") {
-      return null;
-    }
+  const [navbarSlot, setNavbarSlot] = useState<HTMLElement | null>(null);
+  const [displayPanels, setDisplayPanels] = useState<ReactNode[]>(questionPanels);
 
-    return document.getElementById("zen-mode-navbar-slot");
-  });
+  useEffect(() => {
+    setNavbarSlot(document.getElementById("zen-mode-navbar-slot"));
+  }, []);
   const hasQuestions = totalQuestions > 0;
   const lastQuestionIndex = Math.max(totalQuestions - 1, 0);
   const visibleIndex = Math.min(activeIndex, lastQuestionIndex);
@@ -52,8 +61,10 @@ export function ZenModeReader({
   function toggleZenMode() {
     if (!isZenMode) {
       window.scrollTo({ top: 0 });
+      setActiveIndex(0);
+      const isRandom = window.localStorage.getItem(SETTINGS_KEYS.zenRandom) === "true";
+      setDisplayPanels(isRandom ? shuffleArray(questionPanels) : questionPanels);
     }
-
     setIsZenMode(!isZenMode);
   }
 
@@ -89,7 +100,7 @@ export function ZenModeReader({
                 Question {currentQuestionNumber} / {totalQuestions}
               </p>
             </div>
-            <div>{questionPanels[visibleIndex]}</div>
+            <div>{displayPanels[visibleIndex]}</div>
             <div className="mt-10 flex items-center justify-between">
               <Button
                 type="button"

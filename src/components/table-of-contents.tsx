@@ -22,6 +22,7 @@ export function TableOfContents({
   totalItems,
 }: TableOfContentsProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isDesktopOpen, setIsDesktopOpen] = useState(true);
   const [navbarSlot] = useState<HTMLElement | null>(() => {
     if (typeof document === "undefined") {
       return null;
@@ -109,29 +110,36 @@ export function TableOfContents({
         </div>
       )}
 
-      <aside className="hidden min-w-0 lg:sticky lg:top-20 lg:col-start-1 lg:block lg:w-full lg:max-w-72 lg:justify-self-start">
-        <TableOfContentsNav items={items} totalItems={totalItems} />
-      </aside>
+      {isDesktopOpen && (
+        <aside className="hidden min-w-0 lg:sticky lg:top-14 lg:col-start-1 lg:block lg:w-full lg:max-w-72 lg:justify-self-start lg:-ml-6 lg:-mt-12">
+          <TableOfContentsNav items={items} onClose={() => setIsDesktopOpen(false)} />
+        </aside>
+      )}
     </>
   );
 }
 
 function TableOfContentsNav({
   items,
-  totalItems,
-}: TableOfContentsProps) {
+  onClose,
+}: Pick<TableOfContentsProps, "items"> & { onClose: () => void }) {
   return (
     <nav
       aria-label="Table of contents"
-      className="rounded-md border border-zinc-200 bg-white/80 p-2 shadow-sm shadow-zinc-200/50 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/70 dark:shadow-none"
+      className="border border-zinc-200 bg-white/80 p-2 shadow-sm shadow-zinc-200/50 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/70 dark:shadow-none"
     >
-      <div className="mb-2 flex items-center justify-between gap-3 px-2 py-1">
+      <div className="mb-2 flex items-center justify-between px-2 py-1">
         <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
           Contents
         </h2>
-        <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs font-medium tabular-nums text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-          {totalItems}
-        </span>
+        <button
+          type="button"
+          onClick={onClose}
+          className="inline-flex size-6 items-center justify-center rounded text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+          aria-label="Close table of contents"
+        >
+          <X className="size-3.5" aria-hidden="true" />
+        </button>
       </div>
       <TableOfContentsList items={items} />
     </nav>

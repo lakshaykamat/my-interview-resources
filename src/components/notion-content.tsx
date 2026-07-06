@@ -7,20 +7,62 @@ import type {
   NotionTableRow,
   NotionTextBlock,
 } from "@/types/notion";
+import type { TableOfContentsItem } from "@/components/table-of-contents";
 
 type NotionContentProps = {
   blocks: NotionContentBlock[];
 };
 
 export function NotionContent({ blocks }: NotionContentProps) {
-  return <BlockList blocks={blocks} />;
+  const headings = extractHeadings(blocks);
+  return <BlockList blocks={blocks} headings={headings} />;
 }
 
-function BlockList({ blocks }: NotionContentProps) {
+function extractHeadings(blocks: NotionContentBlock[]): TableOfContentsItem[] {
+  const items: TableOfContentsItem[] = [];
+
+  for (const block of blocks) {
+    if (
+      block.type !== "heading_1" &&
+      block.type !== "heading_2" &&
+      block.type !== "heading_3"
+    ) {
+      continue;
+    }
+
+    const level = block.type === "heading_1" ? 1 : block.type === "heading_2" ? 2 : 3;
+    const title = block.text.map((t) => t.plainText).join("");
+    const entry: TableOfContentsItem = { id: block.id, title, level, children: [] };
+
+    if (level === 1) {
+      items.push(entry);
+    } else if (level === 2) {
+      const parent = [...items].reverse().find((i) => i.level === 1);
+      if (parent) parent.children.push(entry);
+      else items.push(entry);
+    } else {
+      const h1 = [...items].reverse().find((i) => i.level === 1);
+      const h2 = h1 ? [...h1.children].reverse().find((i) => i.level === 2) : undefined;
+      if (h2) h2.children.push(entry);
+      else if (h1) h1.children.push(entry);
+      else items.push(entry);
+    }
+  }
+
+  return items;
+}
+
+function BlockList({
+  blocks,
+  headings = [],
+}: {
+  blocks: NotionContentBlock[];
+  headings?: TableOfContentsItem[];
+}) {
   return (
     <div className="space-y-4">
       {blocks.map((block, index) => (
-        <BlockRenderer key={block.id} block={block} index={index} />
+        <BlockRenderer key={block.id} block={block} index={index} headings={headings} />
       ))}
     </div>
   );
@@ -29,9 +71,11 @@ function BlockList({ blocks }: NotionContentProps) {
 function BlockRenderer({
   block,
   index,
+  headings,
 }: {
   block: NotionContentBlock;
   index: number;
+  headings: TableOfContentsItem[];
 }) {
   switch (block.type) {
     case "heading_1":
@@ -100,6 +144,8 @@ function BlockRenderer({
       );
     case "table":
       return <Table block={block} />;
+    case "table_of_contents":
+      return <InlineTableOfContents headings={headings} />;
     case "unsupported":
       return (
         <p className="rounded-md border border-dashed border-zinc-200 px-3 py-2 text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
@@ -276,6 +322,59 @@ function RichText({ text }: { text: NotionRichText[] }) {
         );
       })}
     </>
+  );
+}
+
+function InlineTableOfContents({ headings }: { headings: TableOfContentsItem[] }) {
+  if (headings.length === 0) return null;
+
+  return (
+    <nav
+      aria-label="Table of contents"
+      className="my-2 rounded-md border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900"
+    >
+      <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+        On this page
+      </h2>
+      <InlineTocList items={headings} />
+    </nav>
+  );
+}
+
+function InlineTocList({
+  items,
+  depth = 0,
+}: {
+  items: TableOfContentsItem[];
+  depth?: number;
+}) {
+  return (
+    <ol
+      className={cn(
+        "space-y-0.5",
+        depth > 0 && "mt-0.5 border-l border-zinc-200 pl-3 dark:border-zinc-800",
+      )}
+    >
+      {items.map((item) => (
+        <li key={item.id}>
+          <a
+            href={`#${item.id}`}
+            className={cn(
+              "block rounded px-2 py-1 text-sm leading-5 transition-colors",
+              item.level === 1 && "font-medium text-zinc-800 dark:text-zinc-200",
+              item.level === 2 && "text-zinc-600 dark:text-zinc-300",
+              item.level === 3 && "text-zinc-500 dark:text-zinc-400",
+              "hover:bg-zinc-100 hover:text-zinc-950 dark:hover:bg-zinc-800 dark:hover:text-zinc-50",
+            )}
+          >
+            {item.title}
+          </a>
+          {item.children.length > 0 && (
+            <InlineTocList items={item.children} depth={depth + 1} />
+          )}
+        </li>
+      ))}
+    </ol>
   );
 }
 

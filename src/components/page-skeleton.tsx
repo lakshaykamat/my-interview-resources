@@ -30,11 +30,12 @@ function ArticlePageSkeleton() {
           <div className="rounded-md border border-zinc-200 bg-white/80 p-3 shadow-sm shadow-zinc-200/50 dark:border-zinc-800 dark:bg-zinc-900/70 dark:shadow-none">
             <SkeletonLine className="mb-4 h-4 w-24" />
             <div className="space-y-3">
-              {Array.from({ length: 8 }).map((_, index) => (
-                <SkeletonLine
-                  key={index}
-                  className={cn("h-5", index % 3 === 0 ? "w-11/12" : "w-4/5")}
-                />
+              {[
+                "w-11/12", "w-4/5", "w-9/12",
+                "w-11/12", "w-3/4", "w-5/6",
+                "w-4/5", "w-2/3",
+              ].map((w, i) => (
+                <SkeletonLine key={i} className={cn("h-4", w)} />
               ))}
             </div>
           </div>
@@ -56,13 +57,19 @@ function ArticlePageSkeleton() {
 function IndexSkeleton() {
   return (
     <section className="space-y-3">
-      {Array.from({ length: 5 }).map((_, index) => (
+      {[
+        { title: "w-3/5", meta: "w-20" },
+        { title: "w-4/5", meta: "w-24" },
+        { title: "w-2/3", meta: "w-16" },
+        { title: "w-11/12", meta: "w-20" },
+        { title: "w-1/2", meta: "w-24" },
+      ].map(({ title, meta }, i) => (
         <div
-          key={index}
+          key={i}
           className="rounded-md border border-zinc-200 bg-white px-5 py-4 dark:border-zinc-800 dark:bg-zinc-900"
         >
-          <SkeletonLine className="h-5 w-2/3" />
-          <SkeletonLine className="mt-3 h-4 w-20" />
+          <SkeletonLine className={cn("h-5", title)} />
+          <SkeletonLine className={cn("mt-3 h-3.5", meta)} />
         </div>
       ))}
     </section>
@@ -72,28 +79,57 @@ function IndexSkeleton() {
 function ArticleSkeleton() {
   return (
     <section className="space-y-4">
-      <SkeletonLine className="h-7 w-3/5" />
+      <SkeletonLine className="h-7 w-2/5" />
       <SkeletonLine className="h-4 w-full" />
       <SkeletonLine className="h-4 w-11/12" />
       <SkeletonLine className="h-4 w-4/5" />
-      <div className="py-3">
+      <SkeletonLine className="h-4 w-1/3" />
+
+      <SkeletonImage />
+
+      <div className="pt-2">
         <SkeletonLine className="h-6 w-1/2" />
       </div>
       <SkeletonLine className="h-4 w-full" />
       <SkeletonLine className="h-4 w-10/12" />
+      <SkeletonLine className="h-4 w-9/12" />
+      <SkeletonLine className="h-4 w-3/5" />
+
       <div className="rounded-md border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900">
         <SkeletonLine className="h-4 w-5/6" />
         <SkeletonLine className="mt-3 h-4 w-2/3" />
       </div>
+
+      <SkeletonLine className="h-4 w-full" />
+      <SkeletonLine className="h-4 w-3/4" />
     </section>
+  );
+}
+
+function SkeletonImage({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn(
+        "relative my-4 aspect-video overflow-hidden rounded-md bg-zinc-200 dark:bg-zinc-800",
+        className,
+      )}
+      aria-hidden="true"
+    >
+      <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/50 to-transparent dark:via-white/10" />
+    </div>
   );
 }
 
 function SkeletonLine({ className }: { className?: string }) {
   return (
     <div
-      className={cn("animate-pulse rounded bg-zinc-200 dark:bg-zinc-800", className)}
+      className={cn(
+        "relative overflow-hidden rounded bg-zinc-200 dark:bg-zinc-800",
+        className,
+      )}
       aria-hidden="true"
-    />
+    >
+      <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/50 to-transparent dark:via-white/10" />
+    </div>
   );
 }

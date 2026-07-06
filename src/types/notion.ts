@@ -39,10 +39,16 @@ export type NotionDividerBlock = {
   type: "divider";
 };
 
+export type NotionPageIcon =
+  | { type: "emoji"; emoji: string }
+  | { type: "url"; url: string };
+
 export type NotionChildPageBlock = {
   id: string;
   type: "child_page";
   title: string;
+  icon: NotionPageIcon | null;
+  cover: string | null;
   children: NotionContentBlock[];
 };
 
@@ -59,6 +65,11 @@ export type NotionTableBlock = {
   rows: NotionTableRow[];
 };
 
+export type NotionTableOfContentsBlock = {
+  id: string;
+  type: "table_of_contents";
+};
+
 export type NotionUnsupportedBlock = {
   id: string;
   type: "unsupported";
@@ -71,6 +82,7 @@ export type NotionContentBlock =
   | NotionDividerBlock
   | NotionChildPageBlock
   | NotionTableBlock
+  | NotionTableOfContentsBlock
   | NotionUnsupportedBlock;
 
 export type NotionPageContent = {

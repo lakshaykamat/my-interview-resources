@@ -43,7 +43,7 @@ function ThemeInitScript() {
     try {
       var storedTheme = window.localStorage.getItem("notes-page-theme");
       var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      if (storedTheme === "dark" || (!storedTheme && prefersDark)) {
+      if (storedTheme === "dark" || (storedTheme !== "light" && prefersDark)) {
         document.documentElement.classList.add("dark");
       }
     } catch (_) {}
