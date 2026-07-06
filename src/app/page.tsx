@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { NotionContent } from "@/components/notion-content";
 import { ErrorState, SetupState } from "@/components/notion-page-state";
@@ -7,7 +8,17 @@ import type {
   NotionContentBlock,
 } from "@/types/notion";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 21600; // 6 hours, matches the data cache TTL
+
+export async function generateMetadata(): Promise<Metadata> {
+  const state = await loadNotionRootPageIndex();
+  if (state.status !== "success") return {};
+  return {
+    title: state.page.title,
+    openGraph: { title: state.page.title },
+    twitter: { title: state.page.title },
+  };
+}
 
 export default async function Home() {
   const state = await loadNotionRootPageIndex();

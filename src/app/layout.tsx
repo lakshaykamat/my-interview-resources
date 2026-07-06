@@ -13,9 +13,30 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+
 export const metadata: Metadata = {
-  title: "Interview Notes",
+  metadataBase: new URL(baseUrl),
+  title: {
+    default: "Interview Notes",
+    template: "%s | Interview Notes",
+  },
   description: "A clean Notion-powered interview notes reader.",
+  openGraph: {
+    type: "website",
+    siteName: "Interview Notes",
+    title: "Interview Notes",
+    description: "A clean Notion-powered interview notes reader.",
+  },
+  twitter: {
+    card: "summary",
+    title: "Interview Notes",
+    description: "A clean Notion-powered interview notes reader.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

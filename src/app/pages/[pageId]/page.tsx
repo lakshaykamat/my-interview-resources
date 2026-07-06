@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { NotionContent } from "@/components/notion-content";
 import { ErrorState, SetupState } from "@/components/notion-page-state";
 import {
@@ -5,14 +6,14 @@ import {
   type TableOfContentsItem,
 } from "@/components/table-of-contents";
 import { ZenModeReader } from "@/components/zen-mode-reader";
-import { loadNotionPageById } from "@/lib/notion";
+import { loadNotionPageById, loadNotionRootPageIndex } from "@/lib/notion";
 import {
   groupBlocksByHeading,
   isHeadingBlock,
   plainRichText,
   type ZenQuestionGroup,
 } from "@/lib/zen-mode";
-import type { NotionContentBlock } from "@/types/notion";
+import type { NotionChildPageBlock, NotionContentBlock } from "@/types/notion";
 
 type PageProps = {
   params: Promise<{
@@ -20,7 +21,46 @@ type PageProps = {
   }>;
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 21600; // 6 hours, matches the data cache TTL
+
+export async function generateStaticParams() {
+  const state = await loadNotionRootPageIndex();
+  if (state.status !== "success") return [];
+  return state.page.blocks
+    .filter((b): b is NotionChildPageBlock => b.type === "child_page")
+    .map((page) => ({ pageId: page.id }));
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { pageId } = await params;
+  const state = await loadNotionPageById(pageId);
+  if (state.status !== "success") return {};
+
+  const description = extractDescription(state.page.blocks);
+
+  return {
+    title: state.page.title,
+    description,
+    openGraph: {
+      title: state.page.title,
+      description,
+    },
+    twitter: {
+      title: state.page.title,
+      description,
+    },
+  };
+}
+
+function extractDescription(blocks: NotionContentBlock[]): string | undefined {
+  for (const block of blocks) {
+    if (block.type === "paragraph" && "text" in block && block.text.length > 0) {
+      const text = block.text.map((t) => t.plainText).join("").trim();
+      if (text) return text.slice(0, 160);
+    }
+  }
+  return undefined;
+}
 
 export default async function NotionChildPage({ params }: PageProps) {
   const { pageId } = await params;

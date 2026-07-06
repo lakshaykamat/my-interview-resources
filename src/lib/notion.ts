@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { Client } from "@notionhq/client";
 import { unstable_cache } from "next/cache";
 import type {
@@ -32,10 +33,6 @@ const supportedTextBlockTypes = new Set<NotionTextBlockType>([
 ]);
 
 const notionCacheRevalidateSeconds = 60 * 60 * 6;
-
-export async function loadNotionPageContent(): Promise<NotionLoadState> {
-  return loadNotionPage();
-}
 
 export async function loadNotionPageById(pageId: string): Promise<NotionLoadState> {
   return loadNotionPage(pageId);
@@ -81,7 +78,9 @@ async function loadNotionPage(
   }
 }
 
-const loadCachedNotionPage = unstable_cache(
+// request-level memoization: generateMetadata + page component share one fetch per request
+const loadCachedNotionPage = cache(
+  unstable_cache(
   async (
     rootPageId: string,
     targetPageId: string,
@@ -113,6 +112,7 @@ const loadCachedNotionPage = unstable_cache(
     tags: ["notion-pages"],
     revalidate: notionCacheRevalidateSeconds,
   },
+  ),
 );
 
 function readNotionConfig():
@@ -211,7 +211,13 @@ async function normalizeBlock(
   }
 
   if (block.type === "child_page") {
-    const childPage = await notion.pages.retrieve({ page_id: block.id });
+    const [childPage, children] = await Promise.all([
+      notion.pages.retrieve({ page_id: block.id }),
+      options.includeChildPageContent === false
+        ? Promise.resolve([] as NotionContentBlock[])
+        : fetchChildBlocks(notion, block.id, options),
+    ]);
+
     const icon = "icon" in childPage ? normalizePageIcon(childPage.icon) : null;
     const cover = "cover" in childPage ? normalizePageCover(childPage.cover) : null;
 
@@ -221,10 +227,7 @@ async function normalizeBlock(
       title: block.child_page.title,
       icon,
       cover,
-      children:
-        options.includeChildPageContent === false
-          ? []
-          : await fetchChildBlocks(notion, block.id, options),
+      children,
     };
   }
 
