@@ -1,10 +1,11 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, Focus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavbarPortalSlot } from "@/hooks/use-navbar-portal-slot";
 import { SETTINGS_KEYS } from "@/lib/settings";
 
 type ZenModeReaderProps = {
@@ -29,12 +30,9 @@ export function ZenModeReader({
 }: ZenModeReaderProps) {
   const [isZenMode, setIsZenMode] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [navbarSlot, setNavbarSlot] = useState<HTMLElement | null>(null);
+  const navbarSlot = useNavbarPortalSlot("zen-mode-navbar-slot");
   const [displayPanels, setDisplayPanels] = useState<ReactNode[]>(questionPanels);
 
-  useEffect(() => {
-    setNavbarSlot(document.getElementById("zen-mode-navbar-slot"));
-  }, []);
   const hasQuestions = totalQuestions > 0;
   const lastQuestionIndex = Math.max(totalQuestions - 1, 0);
   const visibleIndex = Math.min(activeIndex, lastQuestionIndex);
@@ -72,17 +70,16 @@ export function ZenModeReader({
     <>
       {navbarSlot &&
         createPortal(
-          <Button
+          <button
             type="button"
-            variant={isZenMode ? "default" : "outline"}
-            size="sm"
             onClick={toggleZenMode}
             aria-pressed={isZenMode}
+            aria-label={isZenMode ? "Exit Zen mode" : "Enter Zen mode"}
             title={isZenMode ? "Exit Zen mode" : "Enter Zen mode"}
+            className="inline-flex size-9 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-700 transition-colors hover:border-zinc-300 hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:border-zinc-700 dark:hover:bg-zinc-900 dark:hover:text-zinc-50 dark:focus-visible:ring-zinc-600"
           >
-            <Focus aria-hidden="true" />
-            {isZenMode ? "Exit Zen" : "Zen"}
-          </Button>,
+            <Focus className="size-4" aria-hidden="true" />
+          </button>,
           navbarSlot,
         )}
 

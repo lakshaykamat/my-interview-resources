@@ -26,20 +26,6 @@ function ArticlePageSkeleton() {
   return (
     <main className="min-h-screen bg-zinc-50 px-5 py-8 text-zinc-950 sm:px-8 sm:py-12 lg:px-6 dark:bg-zinc-950 dark:text-zinc-50">
       <div className="grid w-full gap-8 lg:grid-cols-[minmax(17rem,1fr)_minmax(0,48rem)_minmax(17rem,1fr)] lg:items-start">
-        <aside className="hidden lg:block lg:sticky lg:top-20 lg:col-start-1 lg:w-full lg:max-w-72 lg:justify-self-start">
-          <div className="rounded-md border border-zinc-200 bg-white/80 p-3 shadow-sm shadow-zinc-200/50 dark:border-zinc-800 dark:bg-zinc-900/70 dark:shadow-none">
-            <SkeletonLine className="mb-4 h-4 w-24" />
-            <div className="space-y-3">
-              {[
-                "w-11/12", "w-4/5", "w-9/12",
-                "w-11/12", "w-3/4", "w-5/6",
-                "w-4/5", "w-2/3",
-              ].map((w, i) => (
-                <SkeletonLine key={i} className={cn("h-4", w)} />
-              ))}
-            </div>
-          </div>
-        </aside>
         <article className="min-w-0 pb-20 lg:col-start-2">
           <SkeletonLine className="mb-8 h-5 w-32" />
           <header className="mb-12 border-b border-zinc-200 pb-8 dark:border-zinc-800">

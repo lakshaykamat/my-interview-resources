@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { Menu, X } from "lucide-react";
+import { useModalEscapeAndBodyLock } from "@/hooks/use-modal-escape-and-body-lock";
+import { useNavbarPortalSlot } from "@/hooks/use-navbar-portal-slot";
 import { cn } from "@/lib/utils";
 
 export type TableOfContentsItem = {
@@ -23,33 +25,9 @@ export function TableOfContents({
 }: TableOfContentsProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isDesktopOpen, setIsDesktopOpen] = useState(true);
-  const [navbarSlot] = useState<HTMLElement | null>(() => {
-    if (typeof document === "undefined") {
-      return null;
-    }
+  const navbarSlot = useNavbarPortalSlot("table-of-contents-navbar-slot");
 
-    return document.getElementById("table-of-contents-navbar-slot");
-  });
-
-  useEffect(() => {
-    if (!isMobileOpen) {
-      return;
-    }
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setIsMobileOpen(false);
-      }
-    }
-
-    document.addEventListener("keydown", handleKeyDown);
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
-    };
-  }, [isMobileOpen]);
+  useModalEscapeAndBodyLock(isMobileOpen, () => setIsMobileOpen(false));
 
   if (items.length === 0) {
     return null;
@@ -111,7 +89,7 @@ export function TableOfContents({
       )}
 
       {isDesktopOpen && (
-        <aside className="hidden min-w-0 lg:sticky lg:top-14 lg:col-start-1 lg:block lg:w-full lg:max-w-72 lg:justify-self-start lg:-ml-6 lg:-mt-12">
+        <aside className="hidden min-w-0 lg:sticky lg:top-14 lg:col-start-1 lg:block lg:h-[calc(100dvh-3.5rem)] lg:w-full lg:max-w-72 lg:justify-self-start lg:-ml-6 lg:-mt-12">
           <TableOfContentsNav items={items} onClose={() => setIsDesktopOpen(false)} />
         </aside>
       )}
@@ -126,9 +104,9 @@ function TableOfContentsNav({
   return (
     <nav
       aria-label="Table of contents"
-      className="border border-zinc-200 bg-white/80 p-2 shadow-sm shadow-zinc-200/50 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/70 dark:shadow-none"
+      className="flex h-full flex-col border border-zinc-200 bg-white/80 shadow-sm shadow-zinc-200/50 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/70 dark:shadow-none"
     >
-      <div className="mb-2 flex items-center justify-between px-2 py-1">
+      <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
         <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
           Contents
         </h2>
@@ -141,7 +119,9 @@ function TableOfContentsNav({
           <X className="size-3.5" aria-hidden="true" />
         </button>
       </div>
-      <TableOfContentsList items={items} />
+      <div className="flex-1 overflow-y-auto p-2">
+        <TableOfContentsList items={items} constrainHeight={false} />
+      </div>
     </nav>
   );
 }

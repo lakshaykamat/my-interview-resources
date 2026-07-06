@@ -6,6 +6,9 @@ import {
   type TableOfContentsItem,
 } from "@/components/table-of-contents";
 import { ZenModeReader } from "@/components/zen-mode-reader";
+import { QuestionFilterProvider } from "@/components/question-filter-context";
+import { QuestionFilterPanel } from "@/components/question-filter-panel";
+import { FilterableNotionContent } from "@/components/filterable-notion-content";
 import { loadNotionPageById, loadNotionRootPageIndex } from "@/lib/notion";
 import {
   groupBlocksByHeading,
@@ -13,6 +16,7 @@ import {
   plainRichText,
   type ZenQuestionGroup,
 } from "@/lib/zen-mode";
+import { collectAllMeta, parseQuestionMeta } from "@/lib/question-filter";
 import type { NotionChildPageBlock, NotionContentBlock } from "@/types/notion";
 
 type PageProps = {
@@ -77,7 +81,13 @@ export default async function NotionChildPage({ params }: PageProps) {
   const headings = collectHeadingItems(state.page.blocks);
   const tableOfContents = buildTableOfContents(headings);
   const zenQuestionGroups = groupBlocksByHeading(state.page.blocks);
-  const pageContent = (
+  const hasQuestionGroups = zenQuestionGroups.length > 0;
+  const { difficulties, topics } = hasQuestionGroups
+    ? collectAllMeta(zenQuestionGroups)
+    : { difficulties: [], topics: [] };
+  const allMeta = hasQuestionGroups ? zenQuestionGroups.map(parseQuestionMeta) : [];
+
+  const mainContent = (
     <main className="min-h-screen bg-zinc-50 px-5 py-8 text-zinc-950 sm:px-8 sm:py-12 lg:px-6 dark:bg-zinc-950 dark:text-zinc-50">
       <div className="grid w-full gap-8 lg:grid-cols-[minmax(17rem,1fr)_minmax(0,48rem)_minmax(17rem,1fr)] lg:items-start">
         <TableOfContents items={tableOfContents} totalItems={headings.length} />
@@ -87,26 +97,40 @@ export default async function NotionChildPage({ params }: PageProps) {
               {state.page.title}
             </h1>
           </header>
-          <NotionContent blocks={state.page.blocks} />
+          {hasQuestionGroups ? (
+            <FilterableNotionContent blocks={state.page.blocks} />
+          ) : (
+            <NotionContent blocks={state.page.blocks} />
+          )}
         </article>
-        <div aria-hidden="true" className="hidden lg:block" />
+        {hasQuestionGroups ? (
+          <QuestionFilterPanel
+            difficulties={difficulties}
+            topics={topics}
+            allMeta={allMeta}
+          />
+        ) : (
+          <div aria-hidden="true" className="hidden lg:block" />
+        )}
       </div>
     </main>
   );
 
-  if (zenQuestionGroups.length === 0) {
-    return pageContent;
+  if (!hasQuestionGroups) {
+    return mainContent;
   }
 
   return (
-    <ZenModeReader
-      totalQuestions={zenQuestionGroups.length}
-      questionPanels={zenQuestionGroups.map((group) => (
-        <ZenQuestionPanel key={group.question.id} group={group} />
-      ))}
-    >
-      {pageContent}
-    </ZenModeReader>
+    <QuestionFilterProvider>
+      <ZenModeReader
+        totalQuestions={zenQuestionGroups.length}
+        questionPanels={zenQuestionGroups.map((group) => (
+          <ZenQuestionPanel key={group.question.id} group={group} />
+        ))}
+      >
+        {mainContent}
+      </ZenModeReader>
+    </QuestionFilterProvider>
   );
 }
 

@@ -1,8 +1,8 @@
-# Notes Page
+# My Interview Resources
 
 Interview prep notes, questions, and explanations in one focused reading space.
 
-Notes Page is built for people who want to practice faster without digging through scattered docs, bookmarks, and random notes. We already maintain the interview resources, so you can open the site, pick a topic, and start studying.
+My Interview Resources is built for people who want to practice faster without digging through scattered docs, bookmarks, and random notes. We already maintain the interview resources, so you can open the site, pick a topic, and start studying.
 
 ## What You Get
 
@@ -23,7 +23,7 @@ Notes Page is built for people who want to practice faster without digging throu
 
 ## How To Use It
 
-1. Open the Notes Page.
+1. Open My Interview Resources.
 2. Choose an interview resource from the homepage.
 3. Use the table of contents to jump between sections.
 4. Filter questions by topic or difficulty when available.
@@ -31,7 +31,7 @@ Notes Page is built for people who want to practice faster without digging throu
 
 ## Why It Helps
 
-Interview prep is easier when the material is structured, readable, and ready to practice. Notes Page keeps the experience lean: no setup, no content hunting, just organized resources and focused review.
+Interview prep is easier when the material is structured, readable, and ready to practice. My Interview Resources keeps the experience lean: no setup, no content hunting, just organized resources and focused review.
 
 ## Built With
 

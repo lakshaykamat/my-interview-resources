@@ -73,7 +73,7 @@ async function loadNotionPage(
     return {
       status: "error",
       message:
-        "Could not load the Notion page. Check that the page is shared with your integration and try again.",
+        "Could not load the requested page. Check the application configuration and try again.",
     };
   }
 }

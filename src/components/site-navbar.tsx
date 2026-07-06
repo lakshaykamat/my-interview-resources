@@ -43,6 +43,7 @@ export async function SiteNavbar() {
 
         <div className="flex shrink-0 items-center gap-2">
           <div id="zen-mode-navbar-slot" />
+          <div id="question-filter-navbar-slot" className="lg:hidden" />
           <div id="table-of-contents-navbar-slot" className="lg:hidden" />
           <Link
             href="/settings"

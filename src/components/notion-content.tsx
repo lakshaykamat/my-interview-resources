@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { CodeBlock } from "@/components/code-block";
 import type {
@@ -11,11 +12,12 @@ import type { TableOfContentsItem } from "@/components/table-of-contents";
 
 type NotionContentProps = {
   blocks: NotionContentBlock[];
+  renderParagraph?: (block: NotionTextBlock) => ReactNode | null;
 };
 
-export function NotionContent({ blocks }: NotionContentProps) {
+export function NotionContent({ blocks, renderParagraph }: NotionContentProps) {
   const headings = extractHeadings(blocks);
-  return <BlockList blocks={blocks} headings={headings} />;
+  return <BlockList blocks={blocks} headings={headings} renderParagraph={renderParagraph} />;
 }
 
 function extractHeadings(blocks: NotionContentBlock[]): TableOfContentsItem[] {
@@ -55,14 +57,16 @@ function extractHeadings(blocks: NotionContentBlock[]): TableOfContentsItem[] {
 function BlockList({
   blocks,
   headings = [],
+  renderParagraph,
 }: {
   blocks: NotionContentBlock[];
   headings?: TableOfContentsItem[];
+  renderParagraph?: (block: NotionTextBlock) => ReactNode | null;
 }) {
   return (
     <div className="space-y-4">
       {blocks.map((block, index) => (
-        <BlockRenderer key={block.id} block={block} index={index} headings={headings} />
+        <BlockRenderer key={block.id} block={block} index={index} headings={headings} renderParagraph={renderParagraph} />
       ))}
     </div>
   );
@@ -72,10 +76,12 @@ function BlockRenderer({
   block,
   index,
   headings,
+  renderParagraph,
 }: {
   block: NotionContentBlock;
   index: number;
   headings: TableOfContentsItem[];
+  renderParagraph?: (block: NotionTextBlock) => ReactNode | null;
 }) {
   switch (block.type) {
     case "heading_1":
@@ -105,8 +111,13 @@ function BlockRenderer({
           <RichText text={block.text} />
         </h3>
       );
-    case "paragraph":
+    case "paragraph": {
+      if (renderParagraph) {
+        const override = renderParagraph(block);
+        if (override !== null) return <>{override}</>;
+      }
       return <Paragraph block={block} />;
+    }
     case "bulleted_list_item":
       return <ListItem block={block} marker={"\u2022"} />;
     case "numbered_list_item":
